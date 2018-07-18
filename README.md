@@ -1,5 +1,5 @@
 # Tricotools
-A collection of utilities and tools related to the **Triconex** hardware manufactured by Schneider Electric. Triconex products are a Safety Instrumented Systems (SIS) based on patented triple modular redundancy (TMR) industrial safety-shutdown technology.
+A collection of utilities and tools related to the **Triconex** hardware manufactured by Schneider Electric. Triconex products are a Safety Instrumented Systems (SIS) based on patented triple modular redundancy (TMR) industrial safety-shutdown technology.
 
 # Wireshark dissector
 The dissector for the TriStation protocol has been written in Lua to be portable and easy to use.
@@ -22,6 +22,6 @@ The dissector interprets the TriStation protocol function codes, populating the 
 * Extraction of transmitted PLC programs
 * TRITON malware detection
 
-The dissector automatically detects TRITON malware using specific indicators obtained during malware analysis performed in the laboratory. We provide a **stripped** PCAP file captured during real execution of the malware to demonstrate the described features. 
+The dissector automatically detects TRITON malware using specific indicators obtained during malware analysis performed in the laboratory. We provide a **stripped** PCAP file captured during real execution of the malware to demonstrate the described features. 
 
 We would like to emphasize that the functionality of the dissector is the result of our malware analysis and reflects the attackers’ reverse engineering of the TriStation protocol.

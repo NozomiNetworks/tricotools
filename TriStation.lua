@@ -1,16 +1,16 @@
 --------------------------------------------------------------------------
 --
--- Triconex System Access Application Plug-in for Wireshark
+-- TriStation Protocol Plug-in for Wireshark
 --
--- version : 0.5
--- date    : April, 4 2018
+-- date    : April, 4th 2018
 -- author  : Younes Dragoni         - Security Researcher @(Nozomi Networks)
 -- author  : Alessandro Di Pinto    - Security Researcher @(Nozomi Networks)
+-- contact : secresearch [ @ ] nozominetworks [ . ] com
 --
 --------------------------------------------------------------------------
 
-tsaa_proto = Proto("tsaa" , "TSAA" , "Triconex System Access Application")
--- crc32 module loading
+ts_proto = Proto("TriStation" , "TriStation Protocol")
+-- CRC32 module loading
 pkt_table = {}
 crc_table = {}
 pkt_max_number = 0
@@ -231,29 +231,26 @@ local TS_names = {
    [256]= 'Unknown reject code'
  }
 
+message_type 	= ProtoField.uint16("ts.message_type", "TCM_type", base.HEX) 			
+crc16 			= ProtoField.uint16("ts.crc16", "crc16", base.HEX)						
+crc32 			= ProtoField.uint32("ts.TScksum", "TScksum", base.HEX)					
+cid 			= ProtoField.uint8("ts.ts_cid", "cid", base.DEC) 					
+message_length 	= ProtoField.int16("ts.message_length", "data_len", base.DEC) 	
+ts_checksum 	= ProtoField.uint16("ts.ts_chks", "checksum", base.HEX)			
+ts_function		= ProtoField.uint32("ts.ts_function", "func", base.HEX)			
+ts_program		= ProtoField.uint32("ts.ts_program", "program", base.HEX)	
+ts_signature		= ProtoField.uint32("ts.ts_signature", "triton signature", base.HEX)		
+ts_sequence 	= ProtoField.uint8("ts.ts_sequence", "seq_num", base.DEC) 			
+ts_cmd 			= ProtoField.int16("ts.ts_cmd",	"Command", base.DEC)				
+ts_module		= ProtoField.uint8("ts.ts_module", "module_type", base.HEX)		
+ts_unknown 		= ProtoField.int64("ts.ts_unk", "unk", base.DEC)					
+ts_length 		= ProtoField.int64("ts.ts_len", "data_len", base.DEC)				
+ts_cp_fstat 	= ProtoField.uint64("ts.ts_cp_fstat", "fstat", base.DEC)				
+ts_cp_keyState 	= ProtoField.uint8("ts.ts_cp_keyState", "keyState", base.HEX) 	
+ts_cp_runState 	= ProtoField.uint8("ts.ts_cp_runState", "runState", base.HEX) 		
+ts_path	     	= ProtoField.uint8("ts.ts_path", "path", base.DEC) 				
 
-message_type 	= ProtoField.uint16("tsaa.message_type", "TCM_type", base.HEX) 			
-crc16 			= ProtoField.uint16("tsaa.crc16", "crc16", base.HEX)						
-crc32 			= ProtoField.uint32("tsaa.TScksum", "TScksum", base.HEX)					
-cid 			= ProtoField.uint8("tsaa.ts_cid", "cid", base.DEC) 					
-message_length 	= ProtoField.int16("tsaa.message_length", "data_len", base.DEC) 	
-ts_checksum 	= ProtoField.uint16("tsaa.ts_chks", "checksum", base.HEX)			
-ts_function		= ProtoField.uint32("tsaa.ts_function", "func", base.HEX)			
-ts_program		= ProtoField.uint32("tsaa.ts_program", "program", base.HEX)	
-ts_signature		= ProtoField.uint32("tsaa.ts_signature", "triton signature", base.HEX)		
-ts_sequence 	= ProtoField.uint8("tsaa.ts_sequence", "seq_num", base.DEC) 			
-ts_cmd 			= ProtoField.int16("tsaa.ts_cmd",	"Command", base.DEC)				
-ts_module		= ProtoField.uint8("tsaa.ts_module", "module_type", base.HEX)		
-ts_unknown 		= ProtoField.int64("tsaa.ts_unk", "unk", base.DEC)					
-ts_length 		= ProtoField.int64("tsaa.ts_len", "data_len", base.DEC)				
-ts_cp_fstat 	= ProtoField.uint64("tsaa.ts_cp_fstat", "fstat", base.DEC)				
-ts_cp_keyState 	= ProtoField.uint8("tsaa.ts_cp_keyState", "keyState", base.HEX) 	
-ts_cp_runState 	= ProtoField.uint8("tsaa.ts_cp_runState", "runState", base.HEX) 		
-ts_path	     	= ProtoField.uint8("tsaa.ts_path", "path", base.DEC) 				
-
-
-
-tsaa_proto.fields = {
+ts_proto.fields = {
 					message_type,
           crc16,
           crc32,
@@ -275,14 +272,11 @@ tsaa_proto.fields = {
           ts_module
 }
 
-function tsaa_proto.dissector(buffer, pinfo, tree)
+function ts_proto.dissector(buffer, pinfo, tree)
   length = buffer:len()
-  --if length == 0 then return end
+  pinfo.cols.protocol = ts_proto.name
 
-  pinfo.cols.protocol = tsaa_proto.name
-
-  local subtree = tree:add(tsaa_proto, buffer(), "TSAA Protocol")
-
+  local subtree = tree:add(ts_proto, buffer(), "TriStation Protocol")
   tcm_data = subtree:add(buffer(4),  "TCM communication: ")
   local opcode = buffer(0,1):uint()
   local opcode_name = get_tcm_opcode(opcode)
@@ -300,17 +294,17 @@ function tsaa_proto.dissector(buffer, pinfo, tree)
     cmd_data = ts_data:add(ts_cmd, buffer(6,1):le_uint())
     cmd_detail	= TS_names[buffer(6,1):le_uint()]
     if(cmd_detail ~= nil) then
-    	-- command known
-		cmd_data:append_text(" [" .. cmd_detail .. "]")
+    	-- Supported command
+		  cmd_data:append_text(" [" .. cmd_detail .. "]")
 	else
-		-- command unknown
+		-- Command unknown
 		cmd_data:append_text(" [unknown TS command]")
 	end
     ts_seq = ts_data:add(ts_sequence, buffer(7,1))
     unknown_value = ts_data:add(ts_unknown, buffer(8,2))
     checksum_value = ts_data:add(ts_checksum, buffer(10,2)):append_text(" (" .. buffer(10,2):uint() .. ")")
     len_value = ts_data:add_le(ts_length, buffer(12,2))
-    -- create function for each known response and call based on the reply
+    -- Create function for each known response and call based on the reply
     if buffer(6,1):le_uint() == 108 then cp_status_resp(buffer, cmd_data)      				    
     elseif buffer(6,1):le_uint() == 55 then allocate_program(buffer, cmd_data, pinfo) 				    
     elseif buffer(6,1):le_uint() == 56 then allocate_function(buffer, cmd_data) 			   
@@ -329,7 +323,7 @@ function tsaa_proto.dissector(buffer, pinfo, tree)
     end
 
     crc16_value = tree:add(crc16, buffer(length-2)):append_text(" (" .. buffer(length-2):uint() .. ")")
-  else  -- no TS data
+  else  -- No TS data
   	crc16_value = tree:add(crc16, buffer(length-2)):append_text(" (" .. buffer(length-2):uint() .. ")")
   end   
 end
@@ -343,11 +337,11 @@ function get_led_status(bit)
   return led_status
 end
 
--- function: TCM function list
+-- Function: TCM function list
 function get_tcm_opcode(opcode)
   local opcode_name = "Unknown command"
 
-      if opcode == 1 then opcode_name = "CONNECT REQUEST"
+  if opcode == 1 then opcode_name = "CONNECT REQUEST"
   elseif opcode == 2 then opcode_name = "CONNECT REPLY"
   elseif opcode == 3 then opcode_name = "DISCONN REPLY"
   elseif opcode == 4 then opcode_name = "DISCONN REQUEST"
@@ -362,7 +356,7 @@ function get_tcm_opcode(opcode)
   return opcode_name
 end
 
--- function: TS modules list
+-- Function: TS modules list
 function get_module_type(opcode)
 	local opcode_name = "Unknown module"
 
@@ -517,20 +511,20 @@ function get_module_type(opcode)
 	elseif opcode == 230 then opcode_name = "356X Single Discrete Input, 115V, 64 points"
 	end
 
-  	return opcode_name
+  return opcode_name
 end
 
--- function: communication orientation
+-- Function: communication direction
 function get_comm_type(direction)
-  local comm_type = "Unknown orientation"
+  local comm_type = "Unknown direction"
 
-      if direction == 0 then comm_type = "workstation --> controller"
-  	elseif direction == 1 then comm_type = "controller --> workstation" end
+      if direction == 0 then comm_type = "Workstation --> Controller"
+  	elseif direction == 1 then comm_type = "Controller --> Workstation" end
 
   return comm_type
 end
 
--- function: CP Get Status response
+-- Function: CP Get Status response
 function cp_status_resp(buffer, subtree)
 
   subtree:add(buffer(14,2), "unk:", buffer(14,2):uint())
@@ -565,13 +559,13 @@ function cp_status_resp(buffer, subtree)
   subtree:add(buffer(72,2), "project_major:", buffer(72,2):uint())
   subtree:add_le(buffer(74,4), "project_timestamp:", buffer(74,4):uint())
   subtree:add(buffer(80,10), "project:", buffer(80,10):string())
-  -- unknown data: to parse
+  -- Unknown data: to parse
   if ((buffer(12,2):le_uint() - 10) ~= 0) then
   	ts_raw = ts_data:add(buffer(90,buffer(12,2):le_uint() - 84),  "Data: " .. buffer(90,buffer(12,2):le_uint() - 84))
   end
 end
 
--- function: Allocate Functions
+-- Function: Allocate Functions
 function allocate_function(buffer, subtree)
 	
   subtree:add_le(buffer(14,2), "id:", buffer(14,2):le_uint())
@@ -595,7 +589,7 @@ function allocate_function(buffer, subtree)
   end
 end
 
--- function: Allocate Programs
+-- Function: Allocate Programs
 function allocate_program(buffer, subtree, pinfo)
  
   subtree:add_le(buffer(14,2), "id:", buffer(14,2):le_uint())
@@ -621,7 +615,6 @@ function allocate_program(buffer, subtree, pinfo)
     if (p+8 == blocks)  then
       sign = buffer(buff,4):le_uint()
       checksum, mlw = crc32_calc(chunked, id, Struct.fromhex(tostring(buffer(24, blocks):bytes())), blocks_num, offset, pinfo, sign)
-      wlog("malware flag: " .. tostring(mlw) .. " crc32 " .. checksum)
       if checksum~=0 then
         if mlw then
           malicious_signature = ts_prog:add(ts_signature, buffer(buff,4))
@@ -638,7 +631,7 @@ function allocate_program(buffer, subtree, pinfo)
   end 
 end
 
--- functions: TS2 Program Download 
+-- Functions: TS2 Program Download 
 function ts2_program_download(buffer, subtree)
 	
   subtree:add(buffer(14,4), "unk:", buffer(14,4):uint())
@@ -651,7 +644,7 @@ function ts2_program_download(buffer, subtree)
  
 end
 
--- functions: Get TS2 data module version
+-- Functions: Get TS2 data module version
 function get_t2_data_module_version(buffer, subtree)
 	
   chassis = subtree:add_le(buffer(14,1), "chassis:", buffer(14,1):le_uint())
@@ -690,7 +683,7 @@ function get_t2_data_module_version(buffer, subtree)
   end
 end
 
--- function: Upload functions request
+-- Function: Upload functions request
 function upload_function_req(buffer, subtree)
 	
   subtree:add_le(buffer(14,2), "func_id:", buffer(14,2):le_uint())
@@ -698,7 +691,7 @@ function upload_function_req(buffer, subtree)
   subtree:add_le(buffer(20,2), "offset:", buffer(20,2):le_uint())
 end
 
--- function: Upload functions response
+-- Function: Upload functions response
 function upload_function_res(buffer, subtree)
 	
   subtree:add_le(buffer(14,4), "func_id:", buffer(14,4):le_uint())
@@ -721,7 +714,7 @@ function upload_function_res(buffer, subtree)
   end
 end
 
--- function: Upload program request
+-- Function: Upload program request
 function upload_program_req(buffer, subtree)
 	
   subtree:add_le(buffer(14,2), "program_id:", buffer(14,2):le_uint())
@@ -729,7 +722,7 @@ function upload_program_req(buffer, subtree)
   subtree:add_le(buffer(20,2), "offset:", buffer(20,2):le_uint())
 end
 
--- function: Upload program response
+-- Function: Upload program response
 function upload_program_res(buffer, subtree)
 	
   subtree:add_le(buffer(14,2), "program_id:", buffer(14,2):le_uint())
@@ -756,7 +749,7 @@ function upload_program_res(buffer, subtree)
   end 
 end
 
--- function: Get chassis status response
+-- Function: Get chassis status response
 function get_chassis_status_resp(buffer, subtree)  
 
   subtree:add(buffer(14,2), "TriNode:", buffer(14,2):le_uint())
@@ -787,11 +780,11 @@ function get_chassis_status_resp(buffer, subtree)
   subtree:add(buffer(56,4), "calendar:", os.date('%c',buffer(56,4):uint())) 
   subtree:add(buffer(64,4), "memory_max:", buffer(64,4):le_uint())
   subtree:add(buffer(68,4), "memory_free:", buffer(68,4):le_uint())
-  -- slots
+  -- Slots
   buff = 32 -- bytes to read for each slots
   buff_start = 180 -- buffer location
   count = 0
-  while buff_start < 692 do -- need pcap for testing and place the limit correctly
+  while buff_start < 692 do
   	local module_type = buffer(buff_start+2,1):uint()
   	if module_type  ~= 0 then
   		slot = subtree:add(buffer(buff_start,32), "slot:"):append_text(" [" .. count .. "]")
@@ -834,7 +827,7 @@ function get_chassis_status_resp(buffer, subtree)
 end
 
 
--- function: Tricon attached
+-- Function: Tricon attached
 function tricon_attached(buffer, subtree)	
   if buffer(17,1):uint() == 0 then
   	if buffer(18,1):uint() == 0 then
@@ -861,7 +854,7 @@ function tricon_attached(buffer, subtree)
   end 
 end
 
--- function: convert value to bit rappresentation
+-- Function: convert value to bit rappresentation
 function tobits(num)
   local t={}
   while num>0 do
@@ -871,7 +864,7 @@ function tobits(num)
   end
   return string.reverse(table.concat(t))
 end
--- function: crc32 check_implant
+-- Function: crc32 check_implant
 function crc32_calc(chunk, id, p_buffer, block_num, offset, pinfo, sign)
   local payloads = {}
   local triton = false
@@ -945,4 +938,4 @@ end
 
 
 local udp_port = DissectorTable.get("udp.port")
-udp_port:add(1502, tsaa_proto)
+udp_port:add(1502, ts_proto)

@@ -1,8 +1,8 @@
 # Tricotools
 A collection of utilities and tools related to the **Triconex** hardware manufactured by Schneider Electric. Triconex products are a Safety Instrumented Systems (SIS) based on patented triple modular redundancy (TMR) industrial safety-shutdown technology.
 
-# Wireshark dissector
-The dissector for the TriStation protocol has been written in Lua to be portable and easy to use.
+# TriStation dissector
+The Wireshark dissector for the TriStation protocol has been written in Lua to be portable and easy to use.
 
 ## Installation
 The Lua script is natively supported by Wireshark and there are no required dependencies for using it. The script needs to be placed in the right directory depending on the operating system used. Below are the reported working paths used during development:

@@ -25,3 +25,26 @@ The dissector interprets the TriStation protocol function codes, populating the 
 The dissector automatically detects TRITON malware using specific indicators obtained during malware analysis performed in the laboratory. We provide a **stripped** PCAP file captured during real execution of the malware to demonstrate the described features. 
 
 We would like to emphasize that the functionality of the dissector is the result of our malware analysis and reflects the attackers’ reverse engineering of the TriStation protocol.
+
+# Triconex Honeypot
+The Triconex Honeypot tool can be used by defense teams to simulate SIS controllers with particular system configurations, using them to detect reconnaissance scans and capture malicious payloads. It can therefore play a useful role in detecting unknown traffic targeting a SIS network.
+
+## Dependencies
+The python script requires the library ```crcmod```
+
+* Linux / MacOS: ```pip install crcmod```
+
+## Features
+The tool simulates the controller’s behavior, convincing the Scheider Diagnostic Tool (software used to test it during our analysis) that we are a real controller sending its status, including:
+* Controller version
+* Controller status
+* Controller memory
+* Chassis type
+* Connected modules
+* Status LEDs
+* LED type and color
+* Hardware key position (RUN/STOP/PROGRAM)
+* Project name
+* Modules configuration match/mismatch (project  chassis)
+
+Although the script is currently only a proof-of-concept, it can be expanded to support an extensive number of functions. Its realism can be increased to the point where it is indistinguishable from a real controller. In addition, the script can be executed by a regular, inexpensive computer attached to the network.

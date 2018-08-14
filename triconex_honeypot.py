@@ -257,8 +257,8 @@ if __name__ == "__main__":
 
     UDP_REMOTE = None
     UDP_IP = args.honeyip
-    UDP_PORT = args.honeyport
-    UDP_PORT=1502
+    UDP_PORT = int(args.honeyport)
+    #UDP_PORT=1502
 
     print "[*] Binding the honeypot to the address %s:%d" % (UDP_IP, UDP_PORT)
     try:

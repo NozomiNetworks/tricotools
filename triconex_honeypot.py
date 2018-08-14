@@ -248,7 +248,7 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("-l", metavar="HONEY_IP", dest="honeyip", help="Honeypot IP address", default="0.0.0.0")
-    parser.add_argument("-p", metavar="HONEY_PORT", dest="honeyport", help="Honeypot port", default=1502)
+    parser.add_argument("-p", metavar="HONEY_PORT", dest="honeyport", help="Honeypot port", default=1502, type=int)
     parser.add_argument("-s1", metavar="SLOT1", dest="slot1", help="Module to emulate on slot 1", default="empty", choices=suppmods)
     parser.add_argument("-s2", metavar="SLOT2", dest="slot2", help="Module to emulate on slot 2", default="empty", choices=suppmods)
     parser.add_argument("-s3", metavar="SLOT3", dest="slot3", help="Module to emulate on slot 3", default="empty", choices=suppmods)
@@ -258,7 +258,6 @@ if __name__ == "__main__":
     UDP_REMOTE = None
     UDP_IP = args.honeyip
     UDP_PORT = args.honeyport
-    UDP_PORT=1502
 
     print "[*] Binding the honeypot to the address %s:%d" % (UDP_IP, UDP_PORT)
     try:

@@ -45,6 +45,6 @@ The tool simulates the controller’s behavior, convincing the Scheider Diagnost
 * LED type and color
 * Hardware key position (RUN/STOP/PROGRAM)
 * Project name
-* Modules configuration match/mismatch (project  chassis)
+* Modules configuration match/mismatch (project <-> chassis)
 
 Although the script is currently only a proof-of-concept, it can be expanded to support an extensive number of functions. Its realism can be increased to the point where it is indistinguishable from a real controller. In addition, the script can be executed by a regular, inexpensive computer attached to the network.

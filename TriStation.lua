@@ -3,7 +3,7 @@
 -- TriStation Protocol Plug-in for Wireshark
 --
 -- date    : April, 4th 2018
--- author  : Younes Dragoni (@br4zzor)
+-- author  : Younes Dragoni (@ydragoni)
 -- author  : Alessandro Di Pinto (@adipinto)
 -- contact : secresearch [ @ ] nozominetworks [ . ] com
 --

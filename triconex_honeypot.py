@@ -4,7 +4,7 @@ Triconex Honeypot emulating arbitrary modules (PoC)
 date    : April, 4th 2018
 author  : Alessandro Di Pinto (@adipinto)
 author  : Andrea Arteaga
-author  : Younes Dragoni (@br4zzor)
+author  : Younes Dragoni (@ydragoni)
 
 contact : secresearch [ @ ] nozominetworks [ . ] com
 '''

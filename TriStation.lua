@@ -739,8 +739,8 @@ function upload_program_res(buffer, subtree)
   buff = 24
   local count = 1
   p = 0
-  ts_prog = subtree:add(buffer(24, blocks-4),  "Programs: ") -- split programs based on the blocks number
-  while p < blocks-4 do
+  ts_prog = subtree:add(ts_full_program, buffer(24, blocks-8))  -- split programs based on the blocks number
+	while p < blocks-8 do
   	p = p + 4
     program_hex = ts_prog:add(ts_program, buffer(buff,4)):append_text("	[" .. count .. "]")
   	buff = buff + 4

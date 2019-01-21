@@ -231,24 +231,25 @@ local TS_names = {
    [256]= 'Unknown reject code'
  }
 
-message_type 	= ProtoField.uint16("ts.message_type", "TCM_type", base.HEX) 			
-crc16 			= ProtoField.uint16("ts.crc16", "crc16", base.HEX)						
-crc32 			= ProtoField.uint32("ts.TScksum", "TScksum", base.HEX)					
-cid 			= ProtoField.uint8("ts.ts_cid", "cid", base.DEC) 					
-message_length 	= ProtoField.int16("ts.message_length", "data_len", base.DEC) 	
-ts_checksum 	= ProtoField.uint16("ts.ts_chks", "checksum", base.HEX)			
-ts_function		= ProtoField.uint32("ts.ts_function", "func", base.HEX)			
-ts_program		= ProtoField.uint32("ts.ts_program", "program", base.HEX)	
-ts_signature		= ProtoField.uint32("ts.ts_signature", "triton signature", base.HEX)		
-ts_sequence 	= ProtoField.uint8("ts.ts_sequence", "seq_num", base.DEC) 			
-ts_cmd 			= ProtoField.int16("ts.ts_cmd",	"Command", base.DEC)				
-ts_module		= ProtoField.uint8("ts.ts_module", "module_type", base.HEX)		
-ts_unknown 		= ProtoField.int64("ts.ts_unk", "unk", base.DEC)					
-ts_length 		= ProtoField.int64("ts.ts_len", "data_len", base.DEC)				
-ts_cp_fstat 	= ProtoField.uint64("ts.ts_cp_fstat", "fstat", base.DEC)				
-ts_cp_keyState 	= ProtoField.uint8("ts.ts_cp_keyState", "keyState", base.HEX) 	
-ts_cp_runState 	= ProtoField.uint8("ts.ts_cp_runState", "runState", base.HEX) 		
-ts_path	     	= ProtoField.uint8("ts.ts_path", "path", base.DEC) 				
+message_type 	    = ProtoField.uint16("ts.message_type", "TCM_type", base.HEX) 			
+crc16 			      = ProtoField.uint16("ts.crc16", "crc16", base.HEX)						
+crc32 			      = ProtoField.uint32("ts.TScksum", "TScksum", base.HEX)					
+cid 			        = ProtoField.uint8("ts.ts_cid", "cid", base.DEC) 					
+message_length 	  = ProtoField.int16("ts.message_length", "data_len", base.DEC) 	
+ts_checksum 	    = ProtoField.uint16("ts.ts_chks", "checksum", base.HEX)			
+ts_function		    = ProtoField.uint32("ts.ts_function", "func", base.HEX)			
+ts_program		    = ProtoField.uint32("ts.ts_program", "program", base.HEX)	
+ts_full_program		= ProtoField.new("Programs","ts.ts_full_program",  ftypes.BYTES)	
+ts_signature		  = ProtoField.uint32("ts.ts_signature", "triton signature", base.HEX)		
+ts_sequence 	    = ProtoField.uint8("ts.ts_sequence", "seq_num", base.DEC) 			
+ts_cmd 			      = ProtoField.int16("ts.ts_cmd",	"Command", base.DEC)				
+ts_module		      = ProtoField.uint8("ts.ts_module", "module_type", base.HEX)		
+ts_unknown 		    = ProtoField.int64("ts.ts_unk", "unk", base.DEC)					
+ts_length 		    = ProtoField.int64("ts.ts_len", "data_len", base.DEC)				
+ts_cp_fstat 	    = ProtoField.uint64("ts.ts_cp_fstat", "fstat", base.DEC)				
+ts_cp_keyState 	  = ProtoField.uint8("ts.ts_cp_keyState", "keyState", base.HEX) 	
+ts_cp_runState 	  = ProtoField.uint8("ts.ts_cp_runState", "runState", base.HEX) 		
+ts_path	     	    = ProtoField.uint8("ts.ts_path", "path", base.DEC) 				
 
 ts_proto.fields = {
 					message_type,
@@ -269,7 +270,8 @@ ts_proto.fields = {
           ts_signature,
 					ts_project,
 					ts_path,
-          ts_module
+          ts_module,
+          ts_full_program
 }
 
 function ts_proto.dissector(buffer, pinfo, tree)
@@ -606,7 +608,7 @@ function allocate_program(buffer, subtree, pinfo)
   buff = 24
   local count = 1
   p = 0
-  ts_prog = subtree:add(buffer(24, blocks-4),  "Programs: ") -- split programs based on the blocks number
+  ts_prog = subtree:add(ts_full_program, buffer(24, blocks-8))  -- split programs based on the blocks number
   while p < blocks-8 do
   	p = p + 4
     program_hex = ts_prog:add(ts_program, buffer(buff,4)):append_text("	[" .. count .. "]")
